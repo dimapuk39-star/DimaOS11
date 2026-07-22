@@ -83,8 +83,16 @@ function formatCss(source) {
   return `${output.trim()}\n`;
 }
 
-const cssPath = new URL('../src/style.css', import.meta.url);
-writeFileSync(cssPath, formatCss(readFileSync(cssPath, 'utf8')), 'utf8');
+for (const relative of [
+  '../src/style.css',
+  '../src/settings-center.css',
+  '../src/dima-suite.css',
+  '../src/dima-connect.css',
+  '../src/shell-experience.css',
+]) {
+  const cssPath = new URL(relative, import.meta.url);
+  writeFileSync(cssPath, formatCss(readFileSync(cssPath, 'utf8')), 'utf8');
+}
 
 for (const relative of [
   '../src/App.tsx',
@@ -92,6 +100,10 @@ for (const relative of [
   '../src/WindowsSuite.tsx',
   '../src/MediaPlayer.tsx',
   '../src/BrowserApp.tsx',
+  '../src/SettingsCenter.tsx',
+  '../src/DimaSuite.tsx',
+  '../src/DimaConnect.tsx',
+  '../src/ShellExperience.tsx',
 ]) {
   const path = new URL(relative, import.meta.url);
   const source = readFileSync(path, 'utf8');

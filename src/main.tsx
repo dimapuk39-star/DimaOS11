@@ -9,5 +9,9 @@ import './windows-suite.css';
 import './desktop-experience.css';
 import './final-polish.css';
 import './photos-app.css';
+import './settings-center.css';
+import './dima-suite.css';
+import './dima-connect.css';
+import './shell-experience.css';
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);

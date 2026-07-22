@@ -8,8 +8,12 @@ import { formatBytes, formatUptime, useHardwareInfo } from './hardware';
 import { ClockApp, PaintApp, WeatherApp } from './WindowsSuite';
 import DesktopWidgets from './DesktopExperience';
 import Photos from './PhotosApp';
+import SettingsCenter from './SettingsCenter';
+import { DimaArcadeApp, DimaBoardApp, DimaCodeApp } from './DimaSuite';
+import DimaConnectApp from './DimaConnect';
+import ShellExperience from './ShellExperience';
 
-type AppId = 'explorer' | 'settings' | 'browser' | 'store' | 'terminal' | 'photos' | 'notepad' | 'calculator' | 'taskmanager' | 'dimaai' | 'player' | 'paint' | 'clock' | 'weather';
+type AppId = 'explorer' | 'settings' | 'browser' | 'store' | 'terminal' | 'photos' | 'notepad' | 'calculator' | 'taskmanager' | 'dimaai' | 'player' | 'paint' | 'clock' | 'weather' | 'board' | 'code' | 'arcade' | 'connect';
 type Win = { id: AppId; open: boolean; minimized: boolean; maximized: boolean; z: number; x: number; y: number };
 
 const glyphs: Record<string, ReactNode> = {
@@ -80,6 +84,10 @@ const apps: { id: AppId; title: string; short: string; icon: string; color: stri
   { id: 'paint', title: 'Dima Paint', short: 'P', icon: '✎', color: '#6a58c8' },
   { id: 'clock', title: 'Часы', short: 'Ч', icon: '◷', color: '#477cac' },
   { id: 'weather', title: 'Погода', short: 'П', icon: '☀', color: '#348fc5' },
+  { id: 'board', title: 'Dima Board', short: 'DB', icon: '◆', color: '#4a78db' },
+  { id: 'code', title: 'Dima Code', short: 'DC', icon: '⌁', color: '#2779c9' },
+  { id: 'arcade', title: 'Dima Arcade', short: 'DA', icon: '✣', color: '#7b54dc' },
+  { id: 'connect', title: 'Dima Connect', short: 'DC', icon: '◇', color: '#446fd1' },
 ];
 
 const pinnedTaskbarIds: AppId[] = ['explorer', 'settings', 'browser'];
@@ -422,7 +430,7 @@ export default function App() {
   const chooseWallpaper=(n:number)=>{setWallpaper(n);setCustomWallpaper('')};
   const useCustomWallpaper=async(file:File)=>{await saveBlob('wallpaper:custom',file);if(customWallpaper)URL.revokeObjectURL(customWallpaper);setCustomWallpaper(URL.createObjectURL(file));setWallpaper(3)};
   const restart=()=>{setStart(false);setBootPhase('boot');setTimeout(()=>setBootPhase('hello'),1700);setTimeout(()=>setBootPhase('done'),3300)};
-  const content: Record<AppId, ReactNode> = { explorer:<ExplorerApp onOpenApp={(id)=>openApp(id as AppId)}/>, settings:<Settings wallpaper={wallpaper} onWallpaper={chooseWallpaper} onCustomWallpaper={useCustomWallpaper}/>, browser:<BrowserApp/>, store:<Store/>, terminal:<Terminal/>, photos:<Photos/>, notepad:<Notepad/>, calculator:<CalculatorApp/>, taskmanager:<TaskManagerApp/>, dimaai:<DimaAiApp onOpenApp={(id)=>openApp(id as AppId)}/>, player:<MediaPlayer/>, paint:<PaintApp/>, clock:<ClockApp/>, weather:<WeatherApp/> };
+  const content: Record<AppId, ReactNode> = { explorer:<ExplorerApp onOpenApp={(id)=>openApp(id as AppId)}/>, settings:<SettingsCenter wallpaper={wallpaper} onWallpaper={chooseWallpaper} onCustomWallpaper={useCustomWallpaper}/>, browser:<BrowserApp/>, store:<Store/>, terminal:<Terminal/>, photos:<Photos/>, notepad:<Notepad/>, calculator:<CalculatorApp/>, taskmanager:<TaskManagerApp/>, dimaai:<DimaAiApp onOpenApp={(id)=>openApp(id as AppId)}/>, player:<MediaPlayer/>, paint:<PaintApp/>, clock:<ClockApp/>, weather:<WeatherApp/>, board:<DimaBoardApp/>, code:<DimaCodeApp/>, arcade:<DimaArcadeApp/>, connect:<DimaConnectApp/> };
   const shownApps = apps.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));
   if(bootPhase==='boot')return <div className="boot-screen">
 <div className="boot-brand">
@@ -571,7 +579,8 @@ export default function App() {
 <b>{d}</b>)}{Array.from({length:35},(_,i)=>{const n=i-1; return <span className={n===22?'today':''}>{n>0&&n<32?n:''}</span>})}</div>
 </div>}
     <DesktopWidgets open={widgetsOpen} onClose={()=>setWidgetsOpen(false)} onOpenApp={(id)=>openApp(id as AppId)}/>
-    <footer className="taskbar">
+<ShellExperience onOpenApp={(id)=>openApp(id as AppId)}/>
+<footer className="taskbar">
 <div className="task-center">
 <button className={start?'active':''} onClick={()=>{setStart(!start);setQuick(false);setCalendar(false)}}>
 <DimaMark small/>
