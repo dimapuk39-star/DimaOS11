@@ -406,7 +406,12 @@ export default function App() {
   const [widgetsOpen,setWidgetsOpen]=useState(false);
   useEffect(() => { const t = setInterval(() => setClock(new Date()), 1000); const hello=setTimeout(()=>setBootPhase('hello'),1800); const done=setTimeout(()=>setBootPhase('done'),3400); loadBlob('wallpaper:custom').then(blob=>{if(blob)setCustomWallpaper(URL.createObjectURL(blob))}); return () => {clearInterval(t);clearTimeout(hello);clearTimeout(done)}; }, []);
   useEffect(()=>{setWins(current=>[...current,...initialWins.filter(template=>!current.some(win=>win.id===template.id))])},[]);
-  useEffect(()=>{setTaskbarOrder(current=>[...current.filter(id=>pinnedTaskbarIds.includes(id)),...pinnedTaskbarIds.filter(id=>!current.includes(id))])},[]);
+  useEffect(()=>{setTaskbarOrder(current=>{
+    const openIds=wins.filter(win=>win.open).map(win=>win.id);
+    const visibleIds=[...pinnedTaskbarIds,...openIds];
+    const next=[...current.filter(id=>visibleIds.includes(id)),...visibleIds.filter(id=>!current.includes(id))];
+    return next.length===current.length&&next.every((id,index)=>id===current[index])?current:next;
+  })},[wins]);
   const topZ = useMemo(() => Math.max(...wins.map(w => w.z), 1), [wins]);
   const patchWin = (id: AppId, patch: Partial<Win>) => setWins(ws => ws.map(w => w.id === id ? {...w, ...patch} : w));
   const focus = (id: AppId) => patchWin(id, { z: topZ + 1 });
