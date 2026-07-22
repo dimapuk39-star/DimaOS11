@@ -13,6 +13,7 @@ import { DimaArcadeApp, DimaBoardApp, DimaCodeApp } from './DimaSuite';
 import DimaConnectApp from './DimaConnect';
 import ShellExperience from './ShellExperience';
 import SystemScreens, { type SystemMode } from './SystemScreens';
+import TerminalApp from './TerminalApp';
 
 type AppId = 'explorer' | 'settings' | 'browser' | 'store' | 'terminal' | 'photos' | 'notepad' | 'calculator' | 'taskmanager' | 'dimaai' | 'player' | 'paint' | 'clock' | 'weather' | 'board' | 'code' | 'arcade' | 'connect';
 type Win = { id: AppId; open: boolean; minimized: boolean; maximized: boolean; z: number; x: number; y: number };
@@ -391,13 +392,6 @@ function Store() { const [installed,setInstalled]=useState<string[]>([]); const 
 </div>)}</div>
 </main>
 </div>; }
-function Terminal() { return <div className="terminal">
-<p>Dima Terminal [Версия 11.0.26100.4351]</p>
-<p>(c) Dima Corporation. Все права защищены.</p>
-<br/>
-<p>C:\Users\Дмитрий&gt; <span className="caret">_</span>
-</p>
-</div>; }
 function Notepad() { const [text,setText]=useState(()=>localStorage.getItem('dimaos-note')||'Добро пожаловать в DimaOS 11!\n\nЭто браузерная операционная система, созданная специально для Дмитрия.'); const [saved,setSaved]=useState(false); const save=()=>{localStorage.setItem('dimaos-note',text);setSaved(true);setTimeout(()=>setSaved(false),1200)}; return <div className="notepad">
 <div>
 <button onClick={save}>Сохранить</button>
@@ -437,7 +431,7 @@ export default function App() {
   const useCustomWallpaper=async(file:File)=>{await saveBlob('wallpaper:custom',file);if(customWallpaper)URL.revokeObjectURL(customWallpaper);setCustomWallpaper(URL.createObjectURL(file));setWallpaper(3)};
   const restart=()=>{setStart(false);setPowerOpen(false);setSystemMode(readSetting('security.pinConfigured',false)?'desktop':'locked');setBootPhase('boot');setTimeout(()=>setBootPhase('hello'),1700);setTimeout(()=>setBootPhase('done'),3300)};
   const toggleFullscreen=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{setFullscreen(false)}};
-  const content: Record<AppId, ReactNode> = { explorer:<ExplorerApp onOpenApp={(id)=>openApp(id as AppId)}/>, settings:<SettingsCenter wallpaper={wallpaper} onWallpaper={chooseWallpaper} onCustomWallpaper={useCustomWallpaper}/>, browser:<BrowserApp/>, store:<Store/>, terminal:<Terminal/>, photos:<Photos/>, notepad:<Notepad/>, calculator:<CalculatorApp/>, taskmanager:<TaskManagerApp/>, dimaai:<DimaAiApp onOpenApp={(id)=>openApp(id as AppId)}/>, player:<MediaPlayer/>, paint:<PaintApp/>, clock:<ClockApp/>, weather:<WeatherApp/>, board:<DimaBoardApp/>, code:<DimaCodeApp/>, arcade:<DimaArcadeApp/>, connect:<DimaConnectApp/> };
+  const content: Record<AppId, ReactNode> = { explorer:<ExplorerApp onOpenApp={(id)=>openApp(id as AppId)}/>, settings:<SettingsCenter wallpaper={wallpaper} onWallpaper={chooseWallpaper} onCustomWallpaper={useCustomWallpaper}/>, browser:<BrowserApp/>, store:<Store/>, terminal:<TerminalApp onOpenApp={openApp} onMode={setSystemMode} onRestart={restart}/>, photos:<Photos/>, notepad:<Notepad/>, calculator:<CalculatorApp/>, taskmanager:<TaskManagerApp/>, dimaai:<DimaAiApp onOpenApp={(id)=>openApp(id as AppId)}/>, player:<MediaPlayer/>, paint:<PaintApp/>, clock:<ClockApp/>, weather:<WeatherApp/>, board:<DimaBoardApp/>, code:<DimaCodeApp/>, arcade:<DimaArcadeApp/>, connect:<DimaConnectApp/> };
   const shownApps = apps.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));
   if(bootPhase==='boot')return <div className="boot-screen">
 <div className="boot-brand">
