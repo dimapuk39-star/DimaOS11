@@ -26,7 +26,10 @@ export default function SystemScreens({ mode, wallpaper, customWallpaper, onMode
   const [sleepClock, setSleepClock] = useState(false);
   const [waking, setWaking] = useState(false);
   const [selectedUser, setSelectedUser] = useState<'dmitry' | 'guest'>('dmitry');
-  const [pinCode] = usePersistentState('security.pin', '1111');
+  const [pinCode, setPinCode] = usePersistentState('security.pin', '');
+  const [pinConfigured, setPinConfigured] = usePersistentState('security.pinConfigured', false);
+  const [setupStep, setSetupStep] = useState<'create' | 'confirm'>('create');
+  const [setupPin, setSetupPin] = useState('');
   const pinInput = useRef<HTMLInputElement>(null);
 
   const backdropStyle = customWallpaper ? {
@@ -50,9 +53,11 @@ export default function SystemScreens({ mode, wallpaper, customWallpaper, onMode
 
   useEffect(() => {
     if (mode === 'locked') {
-      setStage('glance');
+      setStage(pinConfigured ? 'glance' : 'signin');
       setPin('');
       setError('');
+      setSetupStep('create');
+      setSetupPin('');
     }
     if (mode === 'sleep') {
       setSleepClock(false);
@@ -60,7 +65,7 @@ export default function SystemScreens({ mode, wallpaper, customWallpaper, onMode
       const reveal = window.setTimeout(() => setSleepClock(true), 1800);
       return () => window.clearTimeout(reveal);
     }
-  }, [mode]);
+  }, [mode, pinConfigured]);
 
   useEffect(() => {
     if (stage === 'signin') window.setTimeout(() => pinInput.current?.focus(), 120);
@@ -78,11 +83,11 @@ export default function SystemScreens({ mode, wallpaper, customWallpaper, onMode
         if (!['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) setStage('signin');
         return;
       }
-      if (event.key === 'Escape') setStage('glance');
+      if (event.key === 'Escape' && pinConfigured) setStage('glance');
     };
     window.addEventListener('keydown', keyboard);
     return () => window.removeEventListener('keydown', keyboard);
-  }, [mode, stage]);
+  }, [mode, stage, pinConfigured]);
 
   function wake() {
     if (waking) return;
@@ -100,11 +105,40 @@ export default function SystemScreens({ mode, wallpaper, customWallpaper, onMode
       onMode('desktop');
       return;
     }
-    setError('Неверный PIN-код. Подсказка: 1111');
+    setError('Неверный PIN-код');
     setPin('');
     setShaking(true);
     window.setTimeout(() => setShaking(false), 520);
     window.setTimeout(() => pinInput.current?.focus(), 30);
+  }
+
+  function configurePin() {
+    if (pin.length < 4 || pin.length > 8) {
+      setError('PIN-код должен содержать от 4 до 8 цифр');
+      setShaking(true);
+      window.setTimeout(() => setShaking(false), 520);
+      return;
+    }
+    if (setupStep === 'create') {
+      setSetupPin(pin);
+      setPin('');
+      setError('');
+      setSetupStep('confirm');
+      window.setTimeout(() => pinInput.current?.focus(), 30);
+      return;
+    }
+    if (pin !== setupPin) {
+      setPin('');
+      setError('PIN-коды не совпадают. Попробуйте ещё раз');
+      setShaking(true);
+      window.setTimeout(() => setShaking(false), 520);
+      return;
+    }
+    setPinCode(pin);
+    setPinConfigured(true);
+    setPin('');
+    setError('');
+    onMode('desktop');
   }
 
   if (mode === 'desktop') return null;
@@ -212,23 +246,27 @@ export default function SystemScreens({ mode, wallpaper, customWallpaper, onMode
 <span>{selectedUser === 'dmitry' ? 'ДК' : 'Г'}</span>
 <i/>
 </div>
-<h1>{selectedUser === 'dmitry' ? 'Дмитрий' : 'Гость'}</h1>
-<p>{selectedUser === 'dmitry' ? 'Введите PIN-код для входа' : 'Гостевой сеанс без PIN-кода'}</p>
-        {selectedUser === 'dmitry' ? <form onSubmit={(event) => { event.preventDefault(); unlock() }}>
+<h1>{selectedUser === 'dmitry' ? (!pinConfigured ? setupStep === 'create' ? 'Создайте PIN-код' : 'Подтвердите PIN-код' : 'Дмитрий') : 'Гость'}</h1>
+<p>{selectedUser === 'dmitry' ? (!pinConfigured ? setupStep === 'create' ? 'От 4 до 8 цифр для защиты вашего профиля' : 'Введите выбранный PIN-код ещё раз' : 'Введите PIN-код для входа') : 'Гостевой сеанс без PIN-кода'}</p>
+        {selectedUser === 'dmitry' ? <form onSubmit={(event) => { event.preventDefault(); pinConfigured ? unlock() : configurePin() }}>
 <label className={error ? 'error' : ''}>
-<input ref={pinInput} type="password" inputMode="numeric" maxLength={8} value={pin} onChange={(event) => { setPin(event.target.value.replace(/\D/g, '')); setError('') }} placeholder="PIN-код"/>
+<input ref={pinInput} type="password" inputMode="numeric" autoComplete={pinConfigured ? 'current-password' : 'new-password'} maxLength={8} value={pin} onChange={(event) => { setPin(event.target.value.replace(/\D/g, '')); setError('') }} placeholder={!pinConfigured ? setupStep === 'create' ? 'Придумайте PIN-код' : 'Повторите PIN-код' : 'PIN-код'}/>
 <button type="submit">→</button>
 </label>
-<div className="pin-dots">{Array.from({ length: 4 }, (_, index) =>
+<div className="pin-dots">{Array.from({ length: 8 }, (_, index) =>
 <i key={index} className={index < pin.length ? 'filled' : ''}/>)}</div>{error && <div className="signin-error">
-<span>!</span>{error}</div>}<button type="button" className="forgot-pin" onClick={() => setError('Стандартный PIN-код этой демонстрации: 1111')}>Я забыл PIN-код</button>
+<span>!</span>{error}</div>}{!pinConfigured ? <div className="pin-setup-steps">
+<span className={setupStep === 'create' ? 'active' : 'done'}><i>1</i> Создание</span>
+<b/>
+<span className={setupStep === 'confirm' ? 'active' : ''}><i>2</i> Подтверждение</span>
+</div> : <button type="button" className="forgot-pin" onClick={() => setError('PIN хранится только в этом браузере. Сбросить его можно в параметрах профиля')}>Я забыл PIN-код</button>}
 </form> : <button className="guest-enter" onClick={unlock}>Войти в гостевой режим</button>}
         <div className="signin-status">
 <span>◇ Защищённый вход DimaOS</span>
 <span>RU</span>
 </div>
 </div>
-<aside className="user-switcher">
+{pinConfigured && <aside className="user-switcher">
 <button className={selectedUser === 'dmitry' ? 'active' : ''} onClick={() => { setSelectedUser('dmitry'); setError('') }}>
 <span>ДК</span>
 <div>
@@ -243,7 +281,7 @@ export default function SystemScreens({ mode, wallpaper, customWallpaper, onMode
 <small>Временный профиль</small>
 </div>
 </button>
-</aside>
+</aside>}
 <div className="signin-actions">
 <button title="Специальные возможности">◉</button>
 <button title="Сеть">⌁</button>
@@ -256,7 +294,7 @@ export default function SystemScreens({ mode, wallpaper, customWallpaper, onMode
 </section>
 </div>
 </div>
-<button className="signin-back" onClick={() => setStage('glance')}>← Назад</button>
+{pinConfigured && <button className="signin-back" onClick={() => setStage('glance')}>← Назад</button>}
 </section>
 </div>;
 }

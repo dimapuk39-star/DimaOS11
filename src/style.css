@@ -115,7 +115,7 @@ button {
   text-shadow:0 2px 3px #234
 }
 .taskbar {
-  position:absolute;
+  position:fixed;
   z-index:10000;
   bottom:0;
   left:0;
@@ -127,13 +127,21 @@ button {
   backdrop-filter:blur(28px) saturate(1.5);
   display:flex;
   align-items:center;
-  justify-content:center
+  justify-content:center;
+  overflow:hidden;
+  contain:layout paint
 }
 .task-center {
   height:100%;
   display:flex;
   align-items:center;
-  gap:4px
+  gap:4px;
+  flex-wrap:nowrap;
+  max-width:calc(100vw - 330px);
+  overflow:hidden
+}
+.task-center>button {
+  flex:0 0 43px
 }
 .taskbar button {
   position:relative;

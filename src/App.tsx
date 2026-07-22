@@ -3,7 +3,7 @@ import ExplorerApp from './Explorer';
 import { CalculatorApp, DimaAiApp, TaskManagerApp } from './SystemApps';
 import BrowserApp from './BrowserApp';
 import MediaPlayer from './MediaPlayer';
-import { loadBlob, saveBlob, usePersistentState } from './storage';
+import { loadBlob, readSetting, saveBlob, usePersistentState } from './storage';
 import { formatBytes, formatUptime, useHardwareInfo } from './hardware';
 import { ClockApp, PaintApp, WeatherApp } from './WindowsSuite';
 import DesktopWidgets from './DesktopExperience';
@@ -413,7 +413,7 @@ export default function App() {
   const [wins, setWins] = usePersistentState<Win[]>('desktop.windows',initialWins); const [start, setStart] = useState(false); const [quick, setQuick] = useState(false); const [calendar, setCalendar] = useState(false); const [search, setSearch] = useState(''); const [wallpaper, setWallpaper] = usePersistentState('desktop.wallpaper',0); const [customWallpaper,setCustomWallpaper]=useState(''); const [clock, setClock] = useState(new Date()); const [bootPhase,setBootPhase]=useState<'boot'|'hello'|'done'>('boot'); const [brightness,setBrightness]=usePersistentState('desktop.brightness',78); const [toggles,setToggles]=usePersistentState<Record<string,boolean>>('desktop.quickToggles',{wifi:true,bluetooth:true,focus:false,airplane:false,night:false,access:false});
   const [taskbarOrder,setTaskbarOrder]=usePersistentState<AppId[]>('desktop.taskbarOrder',pinnedTaskbarIds); const [draggedTaskbarApp,setDraggedTaskbarApp]=useState<AppId|null>(null);
   const [widgetsOpen,setWidgetsOpen]=useState(false);
-  const [systemMode,setSystemMode]=useState<SystemMode>('desktop');
+  const [systemMode,setSystemMode]=useState<SystemMode>(()=>readSetting('security.pinConfigured',false)?'desktop':'locked');
   const [powerOpen,setPowerOpen]=useState(false);
   const [fullscreen,setFullscreen]=useState(Boolean(document.fullscreenElement));
   useEffect(() => { const t = setInterval(() => setClock(new Date()), 1000); const hello=setTimeout(()=>setBootPhase('hello'),1800); const done=setTimeout(()=>setBootPhase('done'),3400); loadBlob('wallpaper:custom').then(blob=>{if(blob)setCustomWallpaper(URL.createObjectURL(blob))}); return () => {clearInterval(t);clearTimeout(hello);clearTimeout(done)}; }, []);
@@ -435,7 +435,7 @@ export default function App() {
   const orderedTaskbarApps=taskbarOrder.map(id=>apps.find(app=>app.id===id)).filter((app):app is typeof apps[number]=>Boolean(app));
   const chooseWallpaper=(n:number)=>{setWallpaper(n);setCustomWallpaper('')};
   const useCustomWallpaper=async(file:File)=>{await saveBlob('wallpaper:custom',file);if(customWallpaper)URL.revokeObjectURL(customWallpaper);setCustomWallpaper(URL.createObjectURL(file));setWallpaper(3)};
-  const restart=()=>{setStart(false);setPowerOpen(false);setSystemMode('desktop');setBootPhase('boot');setTimeout(()=>setBootPhase('hello'),1700);setTimeout(()=>setBootPhase('done'),3300)};
+  const restart=()=>{setStart(false);setPowerOpen(false);setSystemMode(readSetting('security.pinConfigured',false)?'desktop':'locked');setBootPhase('boot');setTimeout(()=>setBootPhase('hello'),1700);setTimeout(()=>setBootPhase('done'),3300)};
   const toggleFullscreen=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{setFullscreen(false)}};
   const content: Record<AppId, ReactNode> = { explorer:<ExplorerApp onOpenApp={(id)=>openApp(id as AppId)}/>, settings:<SettingsCenter wallpaper={wallpaper} onWallpaper={chooseWallpaper} onCustomWallpaper={useCustomWallpaper}/>, browser:<BrowserApp/>, store:<Store/>, terminal:<Terminal/>, photos:<Photos/>, notepad:<Notepad/>, calculator:<CalculatorApp/>, taskmanager:<TaskManagerApp/>, dimaai:<DimaAiApp onOpenApp={(id)=>openApp(id as AppId)}/>, player:<MediaPlayer/>, paint:<PaintApp/>, clock:<ClockApp/>, weather:<WeatherApp/>, board:<DimaBoardApp/>, code:<DimaCodeApp/>, arcade:<DimaArcadeApp/>, connect:<DimaConnectApp/> };
   const shownApps = apps.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));

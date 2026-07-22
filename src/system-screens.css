@@ -544,6 +544,44 @@
   background:#fff;
   box-shadow:0 0 8px #fff
 }
+.pin-setup-steps {
+  display:flex;
+  width:100%;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin-top:11px;
+  color:#ffffff70;
+  font-size:8px
+}
+.pin-setup-steps span {
+  display:flex;
+  align-items:center;
+  gap:4px;
+  white-space:nowrap
+}
+.pin-setup-steps span>i {
+  display:grid;
+  width:17px;
+  height:17px;
+  place-items:center;
+  border:1px solid #ffffff45;
+  border-radius:50%;
+  font-style:normal
+}
+.pin-setup-steps span.active {
+  color:#fff
+}
+.pin-setup-steps span.active>i,.pin-setup-steps span.done>i {
+  border-color:#79baff;
+  color:#fff;
+  background:#2978ca
+}
+.pin-setup-steps>b {
+  width:25px;
+  height:1px;
+  background:#ffffff32
+}
 .signin-error {
   display:flex;
   align-items:center;
