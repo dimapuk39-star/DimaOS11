@@ -15,5 +15,6 @@ import './dima-connect.css';
 import './shell-experience.css';
 import './system-screens.css';
 import './terminal-app.css';
+import './productivity-suite.css';
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);

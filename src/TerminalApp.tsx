@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { usePersistentState } from './storage';
 
-type AppId = 'explorer' | 'settings' | 'browser' | 'store' | 'terminal' | 'photos' | 'notepad' | 'calculator' | 'taskmanager' | 'dimaai' | 'player' | 'paint' | 'clock' | 'weather' | 'board' | 'code' | 'arcade' | 'connect';
+type AppId = 'explorer' | 'settings' | 'browser' | 'store' | 'terminal' | 'photos' | 'notepad' | 'calculator' | 'taskmanager' | 'dimaai' | 'player' | 'paint' | 'clock' | 'weather' | 'board' | 'code' | 'arcade' | 'connect' | 'mail' | 'calendarapp' | 'vault' | 'focus';
 type SystemMode = 'desktop' | 'locked' | 'sleep';
 type LineKind = 'command' | 'output' | 'success' | 'error' | 'muted' | 'accent' | 'art';
 type TerminalLine = { id: number; kind: LineKind; text: string };
@@ -15,6 +15,7 @@ const appAliases: Record<string, AppId> = {
   taskmanager: 'taskmanager', tasks: 'taskmanager', ai: 'dimaai', dimaai: 'dimaai', player: 'player', плеер: 'player',
   paint: 'paint', clock: 'clock', часы: 'clock', weather: 'weather', погода: 'weather', board: 'board', code: 'code',
   arcade: 'arcade', connect: 'connect', terminal: 'terminal', терминал: 'terminal',
+  mail: 'mail', почта: 'mail', calendar: 'calendarapp', календарь: 'calendarapp', vault: 'vault', хранилище: 'vault', focus: 'focus', фокус: 'focus',
 };
 
 const commandNames = [

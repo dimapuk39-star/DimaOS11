@@ -14,8 +14,9 @@ import DimaConnectApp from './DimaConnect';
 import ShellExperience from './ShellExperience';
 import SystemScreens, { type SystemMode } from './SystemScreens';
 import TerminalApp from './TerminalApp';
+import { DimaCalendarApp, DimaFocusApp, DimaMailApp, DimaVaultApp } from './ProductivitySuite';
 
-type AppId = 'explorer' | 'settings' | 'browser' | 'store' | 'terminal' | 'photos' | 'notepad' | 'calculator' | 'taskmanager' | 'dimaai' | 'player' | 'paint' | 'clock' | 'weather' | 'board' | 'code' | 'arcade' | 'connect';
+type AppId = 'explorer' | 'settings' | 'browser' | 'store' | 'terminal' | 'photos' | 'notepad' | 'calculator' | 'taskmanager' | 'dimaai' | 'player' | 'paint' | 'clock' | 'weather' | 'board' | 'code' | 'arcade' | 'connect' | 'mail' | 'calendarapp' | 'vault' | 'focus';
 type Win = { id: AppId; open: boolean; minimized: boolean; maximized: boolean; z: number; x: number; y: number };
 
 const glyphs: Record<string, ReactNode> = {
@@ -90,6 +91,10 @@ const apps: { id: AppId; title: string; short: string; icon: string; color: stri
   { id: 'code', title: 'Dima Code', short: 'DC', icon: '⌁', color: '#2779c9' },
   { id: 'arcade', title: 'Dima Arcade', short: 'DA', icon: '✣', color: '#7b54dc' },
   { id: 'connect', title: 'Dima Connect', short: 'DC', icon: '◇', color: '#446fd1' },
+  { id: 'mail', title: 'Dima Mail', short: 'DM', icon: '✉', color: '#397bd4' },
+  { id: 'calendarapp', title: 'Dima Calendar', short: 'К', icon: '◫', color: '#5c69d9' },
+  { id: 'vault', title: 'Dima Vault', short: 'DV', icon: '◇', color: '#283a69' },
+  { id: 'focus', title: 'Dima Focus', short: 'DF', icon: '◉', color: '#5e65d7' },
 ];
 
 const pinnedTaskbarIds: AppId[] = ['explorer', 'settings', 'browser'];
@@ -431,7 +436,7 @@ export default function App() {
   const useCustomWallpaper=async(file:File)=>{await saveBlob('wallpaper:custom',file);if(customWallpaper)URL.revokeObjectURL(customWallpaper);setCustomWallpaper(URL.createObjectURL(file));setWallpaper(3)};
   const restart=()=>{setStart(false);setPowerOpen(false);setSystemMode(readSetting('security.pinConfigured',false)?'desktop':'locked');setBootPhase('boot');setTimeout(()=>setBootPhase('hello'),1700);setTimeout(()=>setBootPhase('done'),3300)};
   const toggleFullscreen=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{setFullscreen(false)}};
-  const content: Record<AppId, ReactNode> = { explorer:<ExplorerApp onOpenApp={(id)=>openApp(id as AppId)}/>, settings:<SettingsCenter wallpaper={wallpaper} onWallpaper={chooseWallpaper} onCustomWallpaper={useCustomWallpaper}/>, browser:<BrowserApp/>, store:<Store/>, terminal:<TerminalApp onOpenApp={openApp} onMode={setSystemMode} onRestart={restart}/>, photos:<Photos/>, notepad:<Notepad/>, calculator:<CalculatorApp/>, taskmanager:<TaskManagerApp/>, dimaai:<DimaAiApp onOpenApp={(id)=>openApp(id as AppId)}/>, player:<MediaPlayer/>, paint:<PaintApp/>, clock:<ClockApp/>, weather:<WeatherApp/>, board:<DimaBoardApp/>, code:<DimaCodeApp/>, arcade:<DimaArcadeApp/>, connect:<DimaConnectApp/> };
+  const content: Record<AppId, ReactNode> = { explorer:<ExplorerApp onOpenApp={(id)=>openApp(id as AppId)}/>, settings:<SettingsCenter wallpaper={wallpaper} onWallpaper={chooseWallpaper} onCustomWallpaper={useCustomWallpaper}/>, browser:<BrowserApp/>, store:<Store/>, terminal:<TerminalApp onOpenApp={openApp} onMode={setSystemMode} onRestart={restart}/>, photos:<Photos/>, notepad:<Notepad/>, calculator:<CalculatorApp/>, taskmanager:<TaskManagerApp/>, dimaai:<DimaAiApp onOpenApp={(id)=>openApp(id as AppId)}/>, player:<MediaPlayer/>, paint:<PaintApp/>, clock:<ClockApp/>, weather:<WeatherApp/>, board:<DimaBoardApp/>, code:<DimaCodeApp/>, arcade:<DimaArcadeApp/>, connect:<DimaConnectApp/>, mail:<DimaMailApp/>, calendarapp:<DimaCalendarApp/>, vault:<DimaVaultApp/>, focus:<DimaFocusApp/> };
   const shownApps = apps.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));
   if(bootPhase==='boot')return <div className="boot-screen">
 <div className="boot-brand">
