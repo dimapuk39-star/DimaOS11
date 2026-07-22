@@ -56,7 +56,10 @@ export default function DimaConnectApp() {
   const bottom = useRef<HTMLDivElement>(null);
   const active = contacts.find((contact) => contact.id === selected) || contacts[0];
 
-  useEffect(() => bottom.current?.scrollIntoView({ behavior: 'smooth' }), [messages, selected]);
+  useEffect(() => {
+    const viewport = bottom.current?.parentElement;
+    if (viewport) viewport.scrollTop = viewport.scrollHeight;
+  }, [messages, selected]);
   useEffect(() => setMessages((current) => current.map((message) => message.contactId === selected ? { ...message, read: true } : message)), [selected, setMessages]);
 
   const filteredContacts = useMemo(() => contacts.filter((contact) => contact.name.toLowerCase().includes(query.toLowerCase())), [query]);
