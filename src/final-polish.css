@@ -1,0 +1,353 @@
+/* DimaOS 11 — final interaction and material pass. */
+:root {
+  --dima-focus: rgba(78, 151, 255, 0.92);
+  --dima-glass-edge: rgba(255, 255, 255, 0.48);
+  --dima-deep-shadow: 0 24px 70px rgba(13, 35, 72, 0.28);
+  --dima-lift: translateY(-2px);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--dima-focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  color: #061328;
+  background: rgba(116, 184, 255, 0.68);
+}
+
+.window {
+  isolation: isolate;
+  box-shadow: var(--dima-deep-shadow),
+    0 0 0 1px var(--dima-glass-edge) inset;
+  animation: dima-window-arrive 240ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.window::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  content: '';
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12),
+    transparent 34%,
+    transparent 74%,
+    rgba(59, 122, 217, 0.06)
+  );
+}
+
+.window.maximized {
+  animation-duration: 180ms;
+  box-shadow: none;
+}
+
+.window-titlebar {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.window-titlebar:active {
+  cursor: grabbing;
+}
+
+.window-title {
+  min-width: 0;
+}
+
+.window-title > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.window-buttons button {
+  position: relative;
+  transition: background-color 120ms ease,
+    color 120ms ease;
+}
+
+.taskbar {
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.48) inset,
+    0 -14px 45px rgba(17, 46, 86, 0.08);
+}
+
+.taskbar button {
+  position: relative;
+  transform-origin: 50% 100%;
+  transition: transform 150ms cubic-bezier(.2, .8, .2, 1),
+    background-color 150ms ease;
+}
+
+.taskbar button:hover {
+  transform: translateY(-2px) scale(1.035);
+}
+
+.taskbar button:active {
+  transform: translateY(0) scale(.94);
+}
+
+.taskbar button.running::before {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  content: '';
+  background: rgba(62, 139, 242, 0.82);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
+.start-menu,
+.quick-panel,
+.calendar {
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  box-shadow: 0 22px 65px rgba(16, 44, 83, 0.26),
+    0 1px 0 rgba(255, 255, 255, 0.72) inset;
+  animation: dima-flyout-arrive 220ms cubic-bezier(.18, .85, .25, 1) both;
+  transform-origin: 50% 100%;
+}
+
+.start-search,
+.settings-search,
+.address {
+  transition: box-shadow 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.start-search:focus-within,
+.settings-search:focus-within,
+.address:focus-within {
+  border-color: rgba(53, 128, 232, 0.72);
+  background-color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 3px rgba(66, 142, 240, 0.14);
+}
+
+.desktop-icons > button,
+.pinned > button,
+.recommended > div {
+  transition: transform 150ms cubic-bezier(.2, .8, .2, 1),
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.desktop-icons > button:hover,
+.pinned > button:hover {
+  transform: var(--dima-lift);
+}
+
+.desktop-icons > button:active,
+.pinned > button:active {
+  transform: translateY(0) scale(.96);
+}
+
+.app-tile {
+  filter: saturate(1.04);
+  transition: filter 150ms ease,
+    transform 150ms ease;
+}
+
+button:hover .app-tile {
+  filter: saturate(1.13) brightness(1.03);
+}
+
+.setting-card,
+.device-hero,
+.store-hero {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 10px 35px rgba(20, 56, 100, 0.06);
+}
+
+.rows > div {
+  transition: background-color 130ms ease,
+    transform 130ms ease;
+}
+
+.rows > div:hover {
+  background-color: rgba(255, 255, 255, 0.48);
+}
+
+.toggle i,
+.slider input,
+input[type='range'] {
+  cursor: pointer;
+}
+
+.toggle i::after {
+  box-shadow: 0 1px 4px rgba(15, 35, 65, 0.26);
+}
+
+.wallpaper-glow {
+  animation: dima-wallpaper-breathe 11s ease-in-out infinite alternate;
+}
+
+.wallpaper-logo {
+  filter: drop-shadow(0 24px 42px rgba(23, 80, 161, 0.22));
+}
+
+.glass {
+  border-color: rgba(255, 255, 255, 0.48);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.42) inset;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(102, 119, 143, 0.48) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  min-height: 30px;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgba(102, 119, 143, 0.48);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 91, 116, 0.65);
+  background-clip: padding-box;
+}
+
+@keyframes dima-window-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(.975);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dima-flyout-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dima-wallpaper-breathe {
+  from {
+    opacity: .72;
+    transform: scale(1) rotate(-1deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.045) rotate(1deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .window:not(.maximized) {
+    max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 66px);
+  }
+
+  .start-menu {
+    width: min(94vw, 640px);
+  }
+
+  .quick-panel,
+  .calendar {
+    right: 8px;
+    width: min(94vw, 380px);
+  }
+
+  .settings-side {
+    width: 210px;
+  }
+
+  .desktop-icons {
+    gap: 5px;
+  }
+}
+
+@media (max-width: 640px) {
+  .taskbar {
+    padding-inline: 4px;
+  }
+
+  .tray > span,
+  .tray > i {
+    display: none;
+  }
+
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-side {
+    display: none;
+  }
+
+  .window-buttons button {
+    width: 42px;
+  }
+
+  .pinned {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .window,
+  .start-menu,
+  .quick-panel,
+  .calendar {
+    border-color: rgba(17, 36, 64, 0.72);
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline-width: 3px;
+  }
+}
