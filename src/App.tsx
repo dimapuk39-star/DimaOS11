@@ -12,6 +12,7 @@ import SettingsCenter from './SettingsCenter';
 import { DimaArcadeApp, DimaBoardApp, DimaCodeApp } from './DimaSuite';
 import DimaConnectApp from './DimaConnect';
 import ShellExperience from './ShellExperience';
+import SystemScreens, { type SystemMode } from './SystemScreens';
 
 type AppId = 'explorer' | 'settings' | 'browser' | 'store' | 'terminal' | 'photos' | 'notepad' | 'calculator' | 'taskmanager' | 'dimaai' | 'player' | 'paint' | 'clock' | 'weather' | 'board' | 'code' | 'arcade' | 'connect';
 type Win = { id: AppId; open: boolean; minimized: boolean; maximized: boolean; z: number; x: number; y: number };
@@ -412,6 +413,9 @@ export default function App() {
   const [wins, setWins] = usePersistentState<Win[]>('desktop.windows',initialWins); const [start, setStart] = useState(false); const [quick, setQuick] = useState(false); const [calendar, setCalendar] = useState(false); const [search, setSearch] = useState(''); const [wallpaper, setWallpaper] = usePersistentState('desktop.wallpaper',0); const [customWallpaper,setCustomWallpaper]=useState(''); const [clock, setClock] = useState(new Date()); const [bootPhase,setBootPhase]=useState<'boot'|'hello'|'done'>('boot'); const [brightness,setBrightness]=usePersistentState('desktop.brightness',78); const [toggles,setToggles]=usePersistentState<Record<string,boolean>>('desktop.quickToggles',{wifi:true,bluetooth:true,focus:false,airplane:false,night:false,access:false});
   const [taskbarOrder,setTaskbarOrder]=usePersistentState<AppId[]>('desktop.taskbarOrder',pinnedTaskbarIds); const [draggedTaskbarApp,setDraggedTaskbarApp]=useState<AppId|null>(null);
   const [widgetsOpen,setWidgetsOpen]=useState(false);
+  const [systemMode,setSystemMode]=useState<SystemMode>('desktop');
+  const [powerOpen,setPowerOpen]=useState(false);
+  const [fullscreen,setFullscreen]=useState(Boolean(document.fullscreenElement));
   useEffect(() => { const t = setInterval(() => setClock(new Date()), 1000); const hello=setTimeout(()=>setBootPhase('hello'),1800); const done=setTimeout(()=>setBootPhase('done'),3400); loadBlob('wallpaper:custom').then(blob=>{if(blob)setCustomWallpaper(URL.createObjectURL(blob))}); return () => {clearInterval(t);clearTimeout(hello);clearTimeout(done)}; }, []);
   useEffect(()=>{setWins(current=>[...current,...initialWins.filter(template=>!current.some(win=>win.id===template.id))])},[]);
   useEffect(()=>{setTaskbarOrder(current=>{
@@ -420,6 +424,8 @@ export default function App() {
     const next=[...current.filter(id=>visibleIds.includes(id)),...visibleIds.filter(id=>!current.includes(id))];
     return next.length===current.length&&next.every((id,index)=>id===current[index])?current:next;
   })},[wins]);
+  useEffect(()=>{const lockShortcut=(event:KeyboardEvent)=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='l'){event.preventDefault();setSystemMode('locked');setStart(false);setPowerOpen(false)}};window.addEventListener('keydown',lockShortcut);return()=>window.removeEventListener('keydown',lockShortcut)},[]);
+  useEffect(()=>{const changed=()=>setFullscreen(Boolean(document.fullscreenElement));document.addEventListener('fullscreenchange',changed);return()=>document.removeEventListener('fullscreenchange',changed)},[]);
   const topZ = useMemo(() => Math.max(...wins.map(w => w.z), 1), [wins]);
   const patchWin = (id: AppId, patch: Partial<Win>) => setWins(ws => ws.map(w => w.id === id ? {...w, ...patch} : w));
   const focus = (id: AppId) => patchWin(id, { z: topZ + 1 });
@@ -429,7 +435,8 @@ export default function App() {
   const orderedTaskbarApps=taskbarOrder.map(id=>apps.find(app=>app.id===id)).filter((app):app is typeof apps[number]=>Boolean(app));
   const chooseWallpaper=(n:number)=>{setWallpaper(n);setCustomWallpaper('')};
   const useCustomWallpaper=async(file:File)=>{await saveBlob('wallpaper:custom',file);if(customWallpaper)URL.revokeObjectURL(customWallpaper);setCustomWallpaper(URL.createObjectURL(file));setWallpaper(3)};
-  const restart=()=>{setStart(false);setBootPhase('boot');setTimeout(()=>setBootPhase('hello'),1700);setTimeout(()=>setBootPhase('done'),3300)};
+  const restart=()=>{setStart(false);setPowerOpen(false);setSystemMode('desktop');setBootPhase('boot');setTimeout(()=>setBootPhase('hello'),1700);setTimeout(()=>setBootPhase('done'),3300)};
+  const toggleFullscreen=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{setFullscreen(false)}};
   const content: Record<AppId, ReactNode> = { explorer:<ExplorerApp onOpenApp={(id)=>openApp(id as AppId)}/>, settings:<SettingsCenter wallpaper={wallpaper} onWallpaper={chooseWallpaper} onCustomWallpaper={useCustomWallpaper}/>, browser:<BrowserApp/>, store:<Store/>, terminal:<Terminal/>, photos:<Photos/>, notepad:<Notepad/>, calculator:<CalculatorApp/>, taskmanager:<TaskManagerApp/>, dimaai:<DimaAiApp onOpenApp={(id)=>openApp(id as AppId)}/>, player:<MediaPlayer/>, paint:<PaintApp/>, clock:<ClockApp/>, weather:<WeatherApp/>, board:<DimaBoardApp/>, code:<DimaCodeApp/>, arcade:<DimaArcadeApp/>, connect:<DimaConnectApp/> };
   const shownApps = apps.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));
   if(bootPhase==='boot')return <div className="boot-screen">
@@ -520,7 +527,30 @@ export default function App() {
 </>}<footer>
 <div className="profile">ДК</div>
 <b>Дмитрий</b>
-<button title="Перезапустить DimaOS" onClick={restart}>⏻</button>
+<div className="start-power">
+<button title="Питание" onClick={()=>setPowerOpen(!powerOpen)}>⏻</button>{powerOpen&&<section>
+<button onClick={()=>{setSystemMode('locked');setStart(false);setPowerOpen(false)}}>
+<span>◇</span>
+<div>
+<b>Заблокировать</b>
+<small>Win + L</small>
+</div>
+</button>
+<button onClick={()=>{setSystemMode('sleep');setStart(false);setPowerOpen(false)}}>
+<span>☾</span>
+<div>
+<b>Спящий режим</b>
+<small>Сохранить открытые приложения</small>
+</div>
+</button>
+<button onClick={restart}>
+<span>↻</span>
+<div>
+<b>Перезапустить</b>
+<small>Перезапуск DimaOS</small>
+</div>
+</button>
+</section>}</div>
 </footer>
 </div>}
     {quick && <div className="quick-panel glass">
@@ -580,6 +610,7 @@ export default function App() {
 </div>}
     <DesktopWidgets open={widgetsOpen} onClose={()=>setWidgetsOpen(false)} onOpenApp={(id)=>openApp(id as AppId)}/>
 <ShellExperience onOpenApp={(id)=>openApp(id as AppId)}/>
+<SystemScreens mode={systemMode} wallpaper={wallpaper} customWallpaper={customWallpaper} onMode={setSystemMode} onRestart={restart}/>
 <footer className="taskbar">
 <div className="task-center">
 <button className={start?'active':''} onClick={()=>{setStart(!start);setQuick(false);setCalendar(false)}}>
@@ -593,6 +624,7 @@ export default function App() {
 </button>})}</div>
 <div className="tray">
 <span>⌃</span>
+<button className="fullscreen-button" onClick={toggleFullscreen} title={fullscreen?'Выйти из полноэкранного режима':'Скрыть панель Windows и открыть на весь экран'}>{fullscreen?'❐':'⛶'}</button>
 <button onClick={()=>{setQuick(!quick);setCalendar(false);setStart(false)}}>
 <Icon name="wifi"/>
 <Icon name="volume"/>

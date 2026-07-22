@@ -89,6 +89,7 @@ for (const relative of [
   '../src/dima-suite.css',
   '../src/dima-connect.css',
   '../src/shell-experience.css',
+  '../src/system-screens.css',
 ]) {
   const cssPath = new URL(relative, import.meta.url);
   writeFileSync(cssPath, formatCss(readFileSync(cssPath, 'utf8')), 'utf8');
@@ -104,6 +105,7 @@ for (const relative of [
   '../src/DimaSuite.tsx',
   '../src/DimaConnect.tsx',
   '../src/ShellExperience.tsx',
+  '../src/SystemScreens.tsx',
 ]) {
   const path = new URL(relative, import.meta.url);
   const source = readFileSync(path, 'utf8');
