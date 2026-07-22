@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { Component, useEffect, useMemo, useRef, useState, type CSSProperties, type ErrorInfo, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import ExplorerApp from './Explorer';
 import { CalculatorApp, DimaAiApp, TaskManagerApp } from './SystemApps';
 import BrowserApp from './BrowserApp';
@@ -72,6 +72,21 @@ function DimaMark({ small = false }: { small?: boolean }) {
 </span>;
 }
 
+class AppErrorBoundary extends Component<{ appName: string; children: ReactNode }, { crashed: boolean }> {
+  state = { crashed: false };
+  static getDerivedStateFromError() { return { crashed: true }; }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error(`DimaOS app crashed: ${this.props.appName}`, error, info); }
+  render() {
+    if (!this.state.crashed) return this.props.children;
+    return <div className="app-crash-card">
+      <span>!</span>
+      <h2>{this.props.appName} был безопасно остановлен</h2>
+      <p>Приложение столкнулось с повреждёнными локальными данными. Рабочий стол продолжает работать.</p>
+      <button onClick={() => this.setState({ crashed: false })}>↻ Перезапустить приложение</button>
+    </div>;
+  }
+}
+
 const apps: { id: AppId; title: string; short: string; icon: string; color: string }[] = [
   { id: 'browser', title: 'Dima Edge', short: 'E', icon: '◉', color: '#18a6d9' },
   { id: 'explorer', title: 'Проводник', short: 'П', icon: '▰', color: '#f4bd32' },
@@ -126,7 +141,7 @@ function WindowFrame({ win, title, children, onFocus, onClose, onMin, onMax, onM
 <button className="close" onClick={onClose}>×</button>
 </div>
 </header>
-<div className="window-content">{children}</div>
+<div className="window-content"><AppErrorBoundary appName={title}>{children}</AppErrorBoundary></div>
 </section>;
 }
 

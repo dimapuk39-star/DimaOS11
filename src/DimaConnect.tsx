@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from 'react';
 import { usePersistentState } from './storage';
 
 type Contact = { id: string; name: string; avatar: string; color: string; online: boolean; status: string };
@@ -20,9 +20,33 @@ const initialMessages: ChatMessage[] = [
   { id: '5', contactId: 'team', from: 'them', text: 'Сборка 26H2 готова к тестированию 🎉', time: Date.now() - 86400000, read: false },
 ];
 
+function sanitizeMessages(value: unknown): ChatMessage[] {
+  if (!Array.isArray(value)) return initialMessages;
+  const safe = value.filter((item): item is Partial<ChatMessage> & Record<string, unknown> => Boolean(item) && typeof item === 'object')
+    .filter((item) => typeof item.id === 'string' && typeof item.contactId === 'string' && typeof item.text === 'string')
+    .map((item) => ({
+      id: item.id as string,
+      contactId: contacts.some((contact) => contact.id === item.contactId) ? item.contactId as string : 'alex',
+      from: item.from === 'me' ? 'me' as const : 'them' as const,
+      text: item.text as string,
+      time: typeof item.time === 'number' && Number.isFinite(item.time) ? item.time : Date.now(),
+      read: Boolean(item.read),
+    }));
+  return safe.length ? safe : initialMessages;
+}
+
 export default function DimaConnectApp() {
-  const [messages, setMessages] = usePersistentState<ChatMessage[]>('connect.messages', initialMessages);
-  const [selected, setSelected] = usePersistentState('connect.selected', 'alex');
+  const [storedMessages, setStoredMessages] = usePersistentState<unknown>('connect.messages', initialMessages);
+  const [storedSelected, setStoredSelected] = usePersistentState<unknown>('connect.selected', 'alex');
+  const messages = useMemo(() => sanitizeMessages(storedMessages), [storedMessages]);
+  const selected = typeof storedSelected === 'string' && contacts.some((contact) => contact.id === storedSelected) ? storedSelected : 'alex';
+  const setSelected = useCallback((id: string) => setStoredSelected(id), [setStoredSelected]);
+  const setMessages = useCallback((action: SetStateAction<ChatMessage[]>) => {
+    setStoredMessages((current: unknown) => {
+      const safe = sanitizeMessages(current);
+      return typeof action === 'function' ? action(safe) : sanitizeMessages(action);
+    });
+  }, [setStoredMessages]);
   const [query, setQuery] = useState('');
   const [draft, setDraft] = useState('');
   const [panel, setPanel] = useState<'chat' | 'people' | 'calls'>('chat');
@@ -33,7 +57,7 @@ export default function DimaConnectApp() {
   const active = contacts.find((contact) => contact.id === selected) || contacts[0];
 
   useEffect(() => bottom.current?.scrollIntoView({ behavior: 'smooth' }), [messages, selected]);
-  useEffect(() => setMessages((current) => current.map((message) => message.contactId === selected ? { ...message, read: true } : message)), [selected]);
+  useEffect(() => setMessages((current) => current.map((message) => message.contactId === selected ? { ...message, read: true } : message)), [selected, setMessages]);
 
   const filteredContacts = useMemo(() => contacts.filter((contact) => contact.name.toLowerCase().includes(query.toLowerCase())), [query]);
   const chatMessages = messages.filter((message) => message.contactId === selected);

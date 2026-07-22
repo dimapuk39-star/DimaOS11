@@ -1,10 +1,20 @@
 .dima-connect {
+  position:relative;
   display:grid;
   grid-template-columns:62px 245px minmax(320px,1fr) 220px;
   height:100%;
   overflow:hidden;
   color:#263244;
   background:#f4f7fb
+}
+@container (max-width:900px) {
+  .dima-connect {grid-template-columns:55px 210px minmax(280px,1fr)}
+  .connect-info {display:none}
+}
+@container (max-width:620px) {
+  .dima-connect {grid-template-columns:52px minmax(0,1fr)}
+  .connect-list {display:none}
+  .connect-chat {grid-column:2}
 }
 .connect-rail {
   display:flex;
