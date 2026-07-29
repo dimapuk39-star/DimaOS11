@@ -1,3 +1,4 @@
+import './windows-suite.css';
 import {
   useEffect,
   useMemo,

@@ -1,0 +1,74 @@
+/* Lightweight rendering profile for low-power and older devices. */
+.app-loader {
+  display:flex;
+  height:100%;
+  min-height:260px;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  color:#75859a;
+  background:#f5f8fc
+}
+.app-loader>span {
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#347bd4;
+  animation:app-loader-pulse .8s ease-in-out infinite alternate
+}
+.app-loader>span:nth-child(2) {animation-delay:.15s}
+.app-loader>span:nth-child(3) {animation-delay:.3s}
+.app-loader>p {margin-left:8px;font-size:11px}
+@keyframes app-loader-pulse {to{opacity:.25;transform:translateY(-4px)}}
+
+.desktop.performance-mode *,
+.desktop.performance-mode *:before,
+.desktop.performance-mode *:after {
+  animation:none!important;
+  transition:none!important;
+  scroll-behavior:auto!important
+}
+.desktop.performance-mode .glass,
+.desktop.performance-mode .taskbar,
+.desktop.performance-mode .window,
+.desktop.performance-mode .window-titlebar,
+.desktop.performance-mode .notification-center,
+.desktop.performance-mode .command-palette,
+.desktop.performance-mode .lock-system,
+.desktop.performance-mode .signin-card,
+.desktop.performance-mode .shell-menu {
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important
+}
+.desktop.performance-mode .glass {background:#f1f5fbeF!important}
+.desktop.performance-mode .taskbar {background:#edf3fbed!important;box-shadow:0 -1px 5px #162a461c!important}
+.desktop.performance-mode .window {box-shadow:0 8px 28px #07152e4a!important}
+.desktop.performance-mode .wallpaper-glow,
+.desktop.performance-mode .wallpaper-logo,
+.desktop.performance-mode .call-glow,
+.desktop.performance-mode .sleep-stars,
+.desktop.performance-mode .boot-particles,
+.desktop.performance-mode .lock-particles {
+  display:none!important
+}
+.desktop.performance-mode .app-tile,
+.desktop.performance-mode .suite-brand>span,
+.desktop.performance-mode .focus-ring,
+.desktop.performance-mode .vault-orb,
+.desktop.performance-mode .store-hero,
+.desktop.performance-mode .board-hero {
+  box-shadow:none!important;
+  filter:none!important
+}
+.desktop.performance-mode .brightness-shade {will-change:auto}
+.desktop.performance-mode .window-content {contain:layout paint style}
+.desktop.performance-mode .desktop-icons>button:hover,
+.desktop.performance-mode .taskbar button:hover {transform:none!important}
+.desktop.performance-mode .connect-call,
+.desktop.performance-mode .vault-lock {background:#111d38!important}
+.desktop.performance-mode iframe {background:#fff}
+
+@media (prefers-reduced-motion:reduce) {
+  *,*:before,*:after {scroll-behavior:auto!important}
+  .boot-spinner i,.hello-orbit i {animation-duration:2s!important}
+}

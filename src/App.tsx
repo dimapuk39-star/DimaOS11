@@ -1,23 +1,42 @@
-import { Component, useEffect, useMemo, useRef, useState, type CSSProperties, type ErrorInfo, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
-import ExplorerApp from './Explorer';
-import { CalculatorApp, DimaAiApp, TaskManagerApp } from './SystemApps';
-import BrowserApp from './BrowserApp';
-import MediaPlayer from './MediaPlayer';
+import { Component, lazy, Suspense, useEffect, useMemo, useRef, useState, type CSSProperties, type ErrorInfo, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { loadBlob, readSetting, saveBlob, usePersistentState } from './storage';
 import { formatBytes, formatUptime, useHardwareInfo } from './hardware';
-import { ClockApp, PaintApp, WeatherApp } from './WindowsSuite';
 import DesktopWidgets from './DesktopExperience';
-import Photos from './PhotosApp';
-import SettingsCenter from './SettingsCenter';
-import { DimaArcadeApp, DimaBoardApp, DimaCodeApp } from './DimaSuite';
-import DimaConnectApp from './DimaConnect';
 import ShellExperience from './ShellExperience';
 import SystemScreens, { type SystemMode } from './SystemScreens';
-import TerminalApp from './TerminalApp';
-import { DimaCalendarApp, DimaFocusApp, DimaMailApp, DimaVaultApp } from './ProductivitySuite';
+
+const ExplorerApp = lazy(() => import('./Explorer'));
+const BrowserApp = lazy(() => import('./BrowserApp'));
+const MediaPlayer = lazy(() => import('./MediaPlayer'));
+const Photos = lazy(() => import('./PhotosApp'));
+const SettingsCenter = lazy(() => import('./SettingsCenter'));
+const DimaConnectApp = lazy(() => import('./DimaConnect'));
+const TerminalApp = lazy(() => import('./TerminalApp'));
+const CalculatorApp = lazy(() => import('./SystemApps').then(module => ({ default: module.CalculatorApp })));
+const DimaAiApp = lazy(() => import('./SystemApps').then(module => ({ default: module.DimaAiApp })));
+const TaskManagerApp = lazy(() => import('./SystemApps').then(module => ({ default: module.TaskManagerApp })));
+const ClockApp = lazy(() => import('./WindowsSuite').then(module => ({ default: module.ClockApp })));
+const PaintApp = lazy(() => import('./WindowsSuite').then(module => ({ default: module.PaintApp })));
+const WeatherApp = lazy(() => import('./WindowsSuite').then(module => ({ default: module.WeatherApp })));
+const DimaArcadeApp = lazy(() => import('./DimaSuite').then(module => ({ default: module.DimaArcadeApp })));
+const DimaBoardApp = lazy(() => import('./DimaSuite').then(module => ({ default: module.DimaBoardApp })));
+const DimaCodeApp = lazy(() => import('./DimaSuite').then(module => ({ default: module.DimaCodeApp })));
+const DimaCalendarApp = lazy(() => import('./ProductivitySuite').then(module => ({ default: module.DimaCalendarApp })));
+const DimaFocusApp = lazy(() => import('./ProductivitySuite').then(module => ({ default: module.DimaFocusApp })));
+const DimaMailApp = lazy(() => import('./ProductivitySuite').then(module => ({ default: module.DimaMailApp })));
+const DimaVaultApp = lazy(() => import('./ProductivitySuite').then(module => ({ default: module.DimaVaultApp })));
 
 type AppId = 'explorer' | 'settings' | 'browser' | 'store' | 'terminal' | 'photos' | 'notepad' | 'calculator' | 'taskmanager' | 'dimaai' | 'player' | 'paint' | 'clock' | 'weather' | 'board' | 'code' | 'arcade' | 'connect' | 'mail' | 'calendarapp' | 'vault' | 'focus';
 type Win = { id: AppId; open: boolean; minimized: boolean; maximized: boolean; z: number; x: number; y: number };
+
+function detectLowPowerDevice() {
+  const device = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean; effectiveType?: string } };
+  const fewCores = Boolean(navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+  const littleMemory = Boolean(device.deviceMemory && device.deviceMemory <= 4);
+  const slowNetwork = device.connection?.saveData === true || device.connection?.effectiveType === '2g';
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  return fewCores || littleMemory || slowNetwork || reducedMotion;
+}
 
 const glyphs: Record<string, ReactNode> = {
   search: <>
@@ -87,6 +106,10 @@ class AppErrorBoundary extends Component<{ appName: string; children: ReactNode 
   }
 }
 
+function AppLoader() {
+  return <div className="app-loader"><span/><span/><span/><p>Запуск приложения…</p></div>;
+}
+
 const apps: { id: AppId; title: string; short: string; icon: string; color: string }[] = [
   { id: 'browser', title: 'Dima Edge', short: 'E', icon: '◉', color: '#18a6d9' },
   { id: 'explorer', title: 'Проводник', short: 'П', icon: '▰', color: '#f4bd32' },
@@ -141,7 +164,7 @@ function WindowFrame({ win, title, children, onFocus, onClose, onMin, onMax, onM
 <button className="close" onClick={onClose}>×</button>
 </div>
 </header>
-<div className="window-content"><AppErrorBoundary appName={title}>{children}</AppErrorBoundary></div>
+<div className="window-content"><AppErrorBoundary appName={title}><Suspense fallback={<AppLoader/>}>{children}</Suspense></AppErrorBoundary></div>
 </section>;
 }
 
@@ -430,6 +453,7 @@ export default function App() {
   const [systemMode,setSystemMode]=useState<SystemMode>(()=>readSetting('security.pinConfigured',false)?'desktop':'locked');
   const [powerOpen,setPowerOpen]=useState(false);
   const [fullscreen,setFullscreen]=useState(Boolean(document.fullscreenElement));
+  const [ecoMode,setEcoMode]=usePersistentState('performance.ecoMode',detectLowPowerDevice);
   useEffect(() => { const t = setInterval(() => setClock(new Date()), 1000); const hello=setTimeout(()=>setBootPhase('hello'),1800); const done=setTimeout(()=>setBootPhase('done'),3400); loadBlob('wallpaper:custom').then(blob=>{if(blob)setCustomWallpaper(URL.createObjectURL(blob))}); return () => {clearInterval(t);clearTimeout(hello);clearTimeout(done)}; }, []);
   useEffect(()=>{setWins(current=>[...current,...initialWins.filter(template=>!current.some(win=>win.id===template.id))])},[]);
   useEffect(()=>{setTaskbarOrder(current=>{
@@ -478,7 +502,7 @@ export default function App() {
 <i/>
 </div>
 </div>;
-  return <div className={`desktop wallpaper-${wallpaper} ${toggles.night?'night-mode':''}`} style={customWallpaper?{backgroundImage:`url(${customWallpaper})`,backgroundSize:'cover',backgroundPosition:'center'}:undefined} onPointerDown={(e) => { if ((e.target as HTMLElement).classList.contains('desktop')) { setStart(false); setQuick(false); setCalendar(false); } }}>
+  return <div className={`desktop wallpaper-${wallpaper} ${toggles.night?'night-mode':''} ${ecoMode?'performance-mode':''}`} style={customWallpaper?{backgroundImage:`url(${customWallpaper})`,backgroundSize:'cover',backgroundPosition:'center'}:undefined} onPointerDown={(e) => { if ((e.target as HTMLElement).classList.contains('desktop')) { setStart(false); setQuick(false); setCalendar(false); } }}>
 <div className="brightness-shade" style={{opacity:(100-brightness)/170}}/>
 <div className="wallpaper-glow"/>
 <div className="wallpaper-logo">
@@ -594,6 +618,10 @@ export default function App() {
 <button className={toggles.access?'on':''} onClick={()=>setToggles(t=>({...t,access:!t.access}))}>
 <span>◉</span>
 <span>Спец. возможности</span>
+</button>
+<button className={ecoMode?'on':''} onClick={()=>setEcoMode(value=>!value)} title="Уменьшает нагрузку на процессор и видеокарту">
+<span>⚡</span>
+<span>Экономия</span>
 </button>
 </div>
 <div className="slider">

@@ -1,3 +1,4 @@
+import './dima-suite.css';
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { usePersistentState } from './storage';
 

@@ -1,3 +1,4 @@
+import './system-apps.css';
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 
 type OpenApp = (id: string) => void;

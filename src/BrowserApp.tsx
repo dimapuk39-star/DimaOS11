@@ -1,3 +1,4 @@
+import './browser-player.css';
 import {
   useEffect,
   useMemo,

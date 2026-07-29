@@ -1,3 +1,4 @@
+import './settings-center.css';
 import { useEffect, useMemo, useState, type ChangeEvent, type CSSProperties, type ReactNode } from 'react';
 import { formatBytes, formatUptime, useHardwareInfo } from './hardware';
 import { usePersistentState } from './storage';

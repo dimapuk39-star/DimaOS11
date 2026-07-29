@@ -1,3 +1,4 @@
+import './dima-connect.css';
 import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from 'react';
 import { usePersistentState } from './storage';
 

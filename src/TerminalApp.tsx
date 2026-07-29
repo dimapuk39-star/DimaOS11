@@ -1,3 +1,4 @@
+import './terminal-app.css';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { usePersistentState } from './storage';
 

@@ -1,3 +1,4 @@
+import './photos-app.css';
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { deleteBlob, listBlobKeys, loadBlob, saveBlob, usePersistentState } from './storage';
 

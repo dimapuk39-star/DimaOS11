@@ -1,3 +1,4 @@
+import './productivity-suite.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { readSetting, usePersistentState } from './storage';
 
