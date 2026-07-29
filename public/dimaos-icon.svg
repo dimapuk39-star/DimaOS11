@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="background" x1="32" y1="28" x2="476" y2="488" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#183a92"/>
+      <stop offset=".52" stop-color="#315de0"/>
+      <stop offset="1" stop-color="#7c4dd8"/>
+    </linearGradient>
+    <linearGradient id="pane" x1="118" y1="112" x2="402" y2="410" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#bfeaff"/>
+      <stop offset=".45" stop-color="#60c8ff"/>
+      <stop offset="1" stop-color="#e1c8ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#background)"/>
+  <circle cx="256" cy="252" r="178" fill="#72c8ff" opacity=".19" filter="url(#shadow)"/>
+  <g fill="url(#pane)">
+    <path d="M105 115 241 96v145H105z"/>
+    <path d="m271 92 136-19v168H271z"/>
+    <path d="M105 271h136v145l-136-19z"/>
+    <path d="M271 271h136v168l-136-19z"/>
+  </g>
+  <path d="M105 115 241 96v145H105zm166-23 136-19v168H271zM105 271h136v145l-136-19zm166 0h136v168l-136-19z" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="5"/>
+</svg>

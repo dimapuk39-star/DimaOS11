@@ -1,0 +1,31 @@
+{
+  "id": "./",
+  "name": "DimaOS 11",
+  "short_name": "DimaOS",
+  "description": "DimaOS 11 — развлекательная браузерная система в формате обычного приложения.",
+  "lang": "ru",
+  "start_url": "./?source=app",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#070b24",
+  "theme_color": "#070b24",
+  "categories": ["entertainment", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "./dimaos-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Запустить DimaOS",
+      "short_name": "DimaOS",
+      "url": "./?source=shortcut",
+      "icons": [{ "src": "./dimaos-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}
